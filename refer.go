@@ -13,8 +13,6 @@ type Refer struct {
 	Value     *reflect.Value
 }
 
-type V = []reflect.Value
-
 func (r *Refer) Call(method string, args ...interface{}) ([]reflect.Value, error) {
 	if r.Methods == nil {
 		return nil, errCallEmptyMethods
