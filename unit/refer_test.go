@@ -1,8 +1,11 @@
-package refer
+package unit
 
 import (
 	"fmt"
 	"testing"
+	"unsafe"
+
+	"github.com/ymzuiku/refer"
 )
 
 type People struct {
@@ -24,18 +27,23 @@ type NotMethod struct {
 }
 
 func TestEmptyMethodSet(t *testing.T) {
-	ref := New(NotMethod{})
+	ref := refer.New(NotMethod{})
 	ref.F("Name").SetString("dog")
 	ref.F("Age").SetInt(20)
 	ref.F("Age2").SetInt(80)
 	fmt.Println(ref.Interface())
-	if _, err := ref.Call("Say", "hello", 5); !IsErrCallEmptyMethods(err) {
+	if _, err := ref.Call("Say", "hello", 5); !refer.IsErrCallEmptyMethods(err) {
 		t.Error(err)
 	}
 }
 
 func TestAllSet(t *testing.T) {
-	ref := New(People{})
+
+	ref := refer.New(People{})
+
+	fmt.Println(unsafe.Sizeof(People{}))
+	fmt.Println(unsafe.Sizeof(*ref))
+
 	ref.F("Name").SetString("dog")
 	ref.F("Age").SetInt(20)
 	ref.F("Age2").SetInt(80)
@@ -53,7 +61,7 @@ func TestAllSet(t *testing.T) {
 		t.Error("get method error")
 	}
 
-	if _, err := ref.Call("No_Say", "hello", 5); !IsErrCallNotHaveMethod(err) {
+	if _, err := ref.Call("No_Say", "hello", 5); !refer.IsErrCallNotHaveMethod(err) {
 		t.Error(err)
 	}
 }

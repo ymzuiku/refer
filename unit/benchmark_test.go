@@ -1,8 +1,10 @@
-package refer
+package unit
 
 import (
 	"reflect"
 	"testing"
+
+	"github.com/ymzuiku/refer"
 )
 
 type Config struct {
@@ -104,7 +106,7 @@ func BenchmarkReflectHelpNameSet(b *testing.B) {
 }
 
 func BenchmarkReflectReferNameSet(b *testing.B) {
-	ref := New(Config{})
+	ref := refer.New(Config{})
 	for i := 0; i < b.N; i++ {
 		ref.Fields["Name"].SetString("name")
 		ref.Fields["IP"].SetString("ip")
@@ -114,7 +116,7 @@ func BenchmarkReflectReferNameSet(b *testing.B) {
 }
 
 func BenchmarkReflectReferNameUseGet(b *testing.B) {
-	ref := New(Config{})
+	ref := refer.New(Config{})
 	for i := 0; i < b.N; i++ {
 		ref.F("Name").SetString("name")
 		ref.F("IP").SetString("ip")
