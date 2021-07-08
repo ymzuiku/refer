@@ -40,11 +40,19 @@ func (r *Refer) F(key string) reflect.Value {
 }
 
 func (r *Refer) GetFieldNames() []string {
-	fieldList := make([]string, 0, r.NumField)
+	list := make([]string, 0, r.NumField)
 	for k := range r.Fields {
-		fieldList = append(fieldList, k)
+		list = append(list, k)
 	}
-	return fieldList
+	return list
+}
+
+func (r *Refer) GetMethodNames() []string {
+	list := make([]string, 0, r.NumMethod)
+	for k := range r.Methods {
+		list = append(list, k)
+	}
+	return list
 }
 
 func (r *Refer) Interface() interface{} {

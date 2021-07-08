@@ -43,9 +43,14 @@ func TestAllSet(t *testing.T) {
 	if _, err := ref.Call("Say", "hello", 5); err != nil {
 		t.Error(err)
 	}
-	list := ref.GetFieldNames()
-	if list[0] != "Name" || list[1] != "Age" || list[2] != "Age2" {
+	fiels := ref.GetFieldNames()
+	if fiels[0] != "Name" || fiels[1] != "Age" || fiels[2] != "Age2" {
 		t.Error("get field error")
+	}
+
+	methods := ref.GetMethodNames()
+	if methods[0] != "Say" {
+		t.Error("get method error")
 	}
 
 	if _, err := ref.Call("No_Say", "hello", 5); !IsErrCallNotHaveMethod(err) {
