@@ -14,23 +14,9 @@ type Config struct {
 	Timeout string `json:"timeout"`
 }
 
-// func readConfig() *Config {
-// 	config := Config{}
-// 	typ := reflect.TypeOf(config)
-// 	value := reflect.Indirect(reflect.ValueOf(&config))
-
-// 	for i := 0; i < typ.NumField(); i++ {
-// 		f := typ.Field(i)
-// 		if v, ok := f.Tag.Lookup("json"); ok {
-// 			key := fmt.Sprintf("CONFIG_%s", strings.ReplaceAll(strings.ToUpper(v), "-", "_"))
-// 			if env, exist := os.LookupEnv(key); exist {
-// 				value.FieldByName(f.Name).Set(reflect.ValueOf(env))
-// 			}
-// 		}
-// 	}
-
-// 	return &config
-// }
+func (c Config) Add(a, b int) (int, string) {
+	return a + b, "done"
+}
 
 func BenchmarkNew(b *testing.B) {
 	var config *Config
@@ -52,7 +38,6 @@ func BenchmarkReflectNew(b *testing.B) {
 
 func BenchmarkSet(b *testing.B) {
 	config := &Config{}
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		config.Name = "name"
 		config.IP = "ip"
@@ -64,7 +49,6 @@ func BenchmarkSet(b *testing.B) {
 func BenchmarkReflectSet(b *testing.B) {
 	typ := reflect.TypeOf(Config{})
 	ins := reflect.New(typ).Elem()
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ins.Field(0).SetString("name")
 		ins.Field(1).SetString("ip")
@@ -76,7 +60,6 @@ func BenchmarkReflectSet(b *testing.B) {
 func BenchmarkReflectNameSet(b *testing.B) {
 	typ := reflect.TypeOf(Config{})
 	ins := reflect.New(typ).Elem()
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ins.FieldByName("Name").SetString("name")
 		ins.FieldByName("IP").SetString("ip")
@@ -122,5 +105,20 @@ func BenchmarkReflectReferNameUseGet(b *testing.B) {
 		ref.F("IP").SetString("ip")
 		ref.F("URL").SetString("url")
 		ref.F("Timeout").SetString("timeout")
+	}
+}
+
+func BenchmarkAdd(b *testing.B) {
+	c := Config{}
+	for i := 0; i < b.N; i++ {
+		c.Add(i, i)
+	}
+}
+
+func BenchmarkReflectAdd(b *testing.B) {
+	ref := refer.New(Config{})
+
+	for i := 0; i < b.N; i++ {
+		ref.Call("Add", i, i)
 	}
 }
