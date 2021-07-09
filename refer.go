@@ -10,16 +10,16 @@ type Refer struct {
 	NumField  int
 	NumMethod int
 	Type      reflect.Type
-	Value     *reflect.Value
+	Value     reflect.Value
 }
 
-func (r *Refer) Call(method string, args ...interface{}) ([]reflect.Value, error) {
+func (r *Refer) Call(method string, args ...interface{}) []reflect.Value {
 	if r.Methods == nil {
-		return nil, errCallEmptyMethods
+		return nil
 	}
 
 	if _, ok := r.Methods[method]; !ok {
-		return nil, errCallNotHaveMethod{tip: method}
+		return nil
 	}
 
 	length := len(args)
@@ -30,7 +30,7 @@ func (r *Refer) Call(method string, args ...interface{}) ([]reflect.Value, error
 		vals[i] = reflect.ValueOf(args[i])
 	}
 
-	return r.Methods[method].Call(vals), nil
+	return r.Methods[method].Call(vals)
 }
 
 func (r *Refer) F(key string) reflect.Value {
@@ -57,14 +57,14 @@ func (r *Refer) Interface() interface{} {
 	return r.Value.Interface()
 }
 
-func New(target interface{}) *Refer {
+func New(target interface{}) Refer {
 	typ := reflect.TypeOf(target)
 	ins := reflect.New(typ).Elem()
 	numField := ins.NumField()
 	numMethod := ins.NumMethod()
 	r := Refer{
 		Type:      typ,
-		Value:     &ins,
+		Value:     ins,
 		NumField:  numField,
 		NumMethod: numMethod,
 	}
@@ -81,5 +81,5 @@ func New(target interface{}) *Refer {
 			r.Methods[typ.Method(i).Name] = ins.Method(i)
 		}
 	}
-	return &r
+	return r
 }
