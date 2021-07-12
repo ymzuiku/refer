@@ -14,6 +14,18 @@ type Config struct {
 	Timeout string `json:"timeout"`
 }
 
+func (c Config) Sub(a, b int) (int, string) {
+	return a - b, "done"
+}
+
+func (c Config) Sub2(a, b int) (int, string) {
+	return a - b, "done"
+}
+
+func (c Config) Sub3(a, b int) (int, string) {
+	return a - b, "done"
+}
+
 func (c Config) Add(a, b int) (int, string) {
 	return a + b, "done"
 }
@@ -68,7 +80,7 @@ func BenchmarkReflectNameSet(b *testing.B) {
 	}
 }
 
-func ReflectHelp(target interface{}) map[string]reflect.Value {
+func ReflectCache(target interface{}) map[string]reflect.Value {
 	typ := reflect.TypeOf(target)
 	ins := reflect.New(typ).Elem()
 	fields := make(map[string]reflect.Value, ins.NumField())
@@ -78,8 +90,8 @@ func ReflectHelp(target interface{}) map[string]reflect.Value {
 	return fields
 }
 
-func BenchmarkReflectHelpNameSet(b *testing.B) {
-	ref := ReflectHelp(Config{})
+func BenchmarkReflectCacheNameSet(b *testing.B) {
+	ref := ReflectCache(Config{})
 	for i := 0; i < b.N; i++ {
 		ref["Name"].SetString("name")
 		ref["IP"].SetString("ip")
@@ -88,7 +100,7 @@ func BenchmarkReflectHelpNameSet(b *testing.B) {
 	}
 }
 
-func BenchmarkReflectReferNameSet(b *testing.B) {
+func BenchmarkReferNameSet(b *testing.B) {
 	ref := refer.New(Config{})
 	for i := 0; i < b.N; i++ {
 		ref.Fields["Name"].SetString("name")
@@ -98,7 +110,7 @@ func BenchmarkReflectReferNameSet(b *testing.B) {
 	}
 }
 
-func BenchmarkReflectReferNameUseGet(b *testing.B) {
+func BenchmarkReferNameUseGet(b *testing.B) {
 	ref := refer.New(Config{})
 	for i := 0; i < b.N; i++ {
 		ref.F("Name").SetString("name")
@@ -108,14 +120,30 @@ func BenchmarkReflectReferNameUseGet(b *testing.B) {
 	}
 }
 
-func BenchmarkAdd(b *testing.B) {
+func BenchmarkCall(b *testing.B) {
 	c := Config{}
 	for i := 0; i < b.N; i++ {
 		c.Add(i, i)
 	}
 }
 
-func BenchmarkReflectAdd(b *testing.B) {
+func BenchmarkReflectMethodIndexCall(b *testing.B) {
+	value := reflect.ValueOf(Config{})
+
+	for i := 0; i < b.N; i++ {
+		value.Method(0).Call([]reflect.Value{reflect.ValueOf(i), reflect.ValueOf(i)})
+	}
+}
+
+func BenchmarkReflectMethodNameCall(b *testing.B) {
+	value := reflect.ValueOf(Config{})
+
+	for i := 0; i < b.N; i++ {
+		value.MethodByName("Add").Call([]reflect.Value{reflect.ValueOf(i), reflect.ValueOf(i)})
+	}
+}
+
+func BenchmarkReferCall(b *testing.B) {
 	ref := refer.New(Config{})
 
 	for i := 0; i < b.N; i++ {
