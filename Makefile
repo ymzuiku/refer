@@ -1,5 +1,5 @@
 base:
-	make bench-copy
+	make test
 copy:
 	go test ./... -test.run TestCopy
 test:

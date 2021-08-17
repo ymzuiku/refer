@@ -80,7 +80,11 @@ func Copy(base interface{}, target interface{}) {
 }
 
 func Args(args ...interface{}) []reflect.Value {
-	vals := make([]reflect.Value, len(args))
+	l := len(args)
+	if l == 0 {
+		return []reflect.Value{}
+	}
+	vals := make([]reflect.Value, l)
 
 	for i, v := range args {
 		vals[i] = reflect.ValueOf(v)
@@ -89,22 +93,14 @@ func Args(args ...interface{}) []reflect.Value {
 	return vals
 }
 
-func Call(target interface{}, key string, args ...interface{}) []reflect.Value {
-	method := reflect.ValueOf(target).MethodByName(key)
-	if !method.IsNil() {
-		return method.Call(Args(args))
-	}
-
-	return []reflect.Value{}
+func Call(target interface{}, name string, args ...interface{}) []reflect.Value {
+	return reflect.ValueOf(target).MethodByName(name).Call(Args(args...))
 }
 
-func Set(target interface{}, key string, value interface{}) {
-	field := reflect.ValueOf(target).FieldByName(key)
-	if !field.IsNil() {
-		field.Set(reflect.ValueOf(value))
-	}
+func Set(target interface{}, name string, value interface{}) {
+	reflect.ValueOf(target).Elem().FieldByName(name).Set(reflect.ValueOf(value))
 }
 
-func Get(target interface{}, key string) reflect.Value {
-	return reflect.ValueOf(target).FieldByName(key)
+func Get(target interface{}, name string) reflect.Value {
+	return reflect.ValueOf(target).FieldByName(name)
 }

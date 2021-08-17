@@ -105,3 +105,23 @@ func TestCopy(t *testing.T) {
 	}
 	base.Say()
 }
+
+func TestCall(t *testing.T) {
+	base := Base{Name: "dog"}
+	values := refer.Call(&base, "Say")
+	if values[0].Interface() != "dog" {
+		t.Error("call error")
+	}
+}
+
+func TestGetAndSet(t *testing.T) {
+	base := Base{Name: "dog"}
+	val := refer.Get(base, "Name")
+	if val.Interface() != "dog" {
+		t.Error("call error")
+	}
+	refer.Set(&base, "Name", "cat")
+	if refer.Get(base, "Name").Interface() != "cat" {
+		t.Error("call error")
+	}
+}
