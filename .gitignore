@@ -1,5 +1,6 @@
 
 .env
+refer_bk.go
 
 # Binaries for programs and plugins
 *.exe

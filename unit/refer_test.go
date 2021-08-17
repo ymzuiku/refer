@@ -3,7 +3,6 @@ package unit
 import (
 	"fmt"
 	"testing"
-	"unsafe"
 
 	"github.com/ymzuiku/refer"
 )
@@ -14,10 +13,11 @@ type People struct {
 	Age2 int64
 }
 
-func (p People) Say(a string, b int) {
+func (p People) Say(a string, b int) int {
 	fmt.Printf("base: %v, %v ", p.Name, p.Age)
 	fmt.Printf("base: %v, %v, %v", p.Name, p.Age, p.Age2)
 	fmt.Printf("say: %v, %v\n", a, b)
+	return b * b
 }
 
 type NotMethod struct {
@@ -27,37 +27,50 @@ type NotMethod struct {
 }
 
 func TestEmptyMethodSet(t *testing.T) {
-	ref := refer.New(NotMethod{})
-	ref.F("Name").SetString("dog")
-	ref.F("Age").SetInt(20)
-	ref.F("Age2").SetInt(80)
-	fmt.Println(ref.Interface())
-	ref.Call("Say", "hello", 5)
+	fields := refer.Fields(&NotMethod{})
+	fields["Name"].SetString("dog")
+	fields["Age"].SetInt(20)
+	fields["Age2"].SetInt(80)
+
+	methods := refer.Methods(People{})
+
+	methods["Say"].Call(refer.Args("hello", 5))
 }
 
 func TestAllSet(t *testing.T) {
 
-	ref := refer.New(People{})
+	fields := refer.Fields(&People{})
+	fields["Name"].SetString("dog")
+	fields["Age"].SetInt(20)
+	fields["Age2"].SetInt(80)
 
-	fmt.Println(unsafe.Sizeof(People{}))
-	fmt.Println(unsafe.Sizeof(ref))
+	methods := refer.Methods(People{})
 
-	ref.F("Name").SetString("dog")
-	ref.F("Age").SetInt(20)
-	ref.F("Age2").SetInt(80)
-	fmt.Println(ref.Interface())
-	ref.Call("Say", "hello", 5)
-	fiels := ref.GetFieldNames()
+	out := methods["Say"].Call(refer.Args("hello", 5))
+
+	if out[0].Interface() != 25 {
+		t.Error("say error")
+	}
+
+	fiels := refer.FieldsList(&People{})
 	if fiels[0] != "Name" || fiels[1] != "Age" || fiels[2] != "Age2" {
 		t.Error("get field error")
 	}
 
-	methods := ref.GetMethodNames()
-	if methods[0] != "Say" {
-		t.Error("get method error")
+	m := refer.MethodsList(&People{})
+	if m[0] != "Say" {
+		t.Error("get method error", m)
+	}
+}
+
+func TestSetAndLoad(t *testing.T) {
+	target := Target{Name: "dog", Age: 10}
+	fields := refer.Fields(&target)
+	fields["Name"].SetString("dog2")
+	if fields["Name"].Interface() != "dog2" {
+		t.Error("base.Name need eq 'dog2'", fields["Name"].Interface())
 	}
 
-	ref.Call("No_Say", "hello", 5)
 }
 
 type Base struct {
@@ -77,24 +90,18 @@ type Target struct {
 }
 
 func (b Target) Say() string {
-	fmt.Println("target say", b.Name, b.Age)
 	return b.Name
 }
 
-// func TestCopy(t *testing.T) {
-// 	// target := Target{Name: "dog", Age: 10}
-// 	// base := Base{}
-
-// 	target := Target{Name: "dog", Age: 10}
-// 	base := Base{}
-// 	refer.Copy(&base, target)
-// 	fmt.Println(base)
-// 	if base.Name != "dog" {
-// 		t.Error("base.Name need eq 'dog'")
-// 	}
-// 	if base.Age != 10 {
-// 		t.Error("bas.Agee need eq 10")
-// 	}
-// 	base.Say()
-// 	t.Error("aa")
-// }
+func TestCopy(t *testing.T) {
+	target := Target{Name: "dog", Age: 10}
+	var base Base
+	refer.Copy(&base, target)
+	if base.Name != "dog" {
+		t.Error("base.Name need eq 'dog'")
+	}
+	if base.Age != 10 {
+		t.Error("bas.Agee need eq 10")
+	}
+	base.Say()
+}

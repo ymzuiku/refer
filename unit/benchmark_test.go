@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -101,22 +102,12 @@ func BenchmarkReflectCacheNameSet(b *testing.B) {
 }
 
 func BenchmarkReferNameSet(b *testing.B) {
-	ref := refer.New(Config{})
+	fields := refer.Fields(&Config{})
 	for i := 0; i < b.N; i++ {
-		ref.Fields["Name"].SetString("name")
-		ref.Fields["IP"].SetString("ip")
-		ref.Fields["URL"].SetString("url")
-		ref.Fields["Timeout"].SetString("timeout")
-	}
-}
-
-func BenchmarkReferNameUseGet(b *testing.B) {
-	ref := refer.New(Config{})
-	for i := 0; i < b.N; i++ {
-		ref.F("Name").SetString("name")
-		ref.F("IP").SetString("ip")
-		ref.F("URL").SetString("url")
-		ref.F("Timeout").SetString("timeout")
+		fields["Name"].SetString("name")
+		fields["IP"].SetString("ip")
+		fields["URL"].SetString("url")
+		fields["Timeout"].SetString("timeout")
 	}
 }
 
@@ -144,9 +135,47 @@ func BenchmarkReflectMethodNameCall(b *testing.B) {
 }
 
 func BenchmarkReferCall(b *testing.B) {
-	ref := refer.New(Config{})
+	methods := refer.Methods(Config{})
 
 	for i := 0; i < b.N; i++ {
-		ref.Call("Add", i, i)
+		methods["Add"].Call(refer.Args(i, i))
+	}
+}
+
+func BenchmarkReferCopy(b *testing.B) {
+	type Base struct {
+		Name string
+		Age  int
+		Haha func() string
+	}
+
+	type Target struct {
+		Name string
+		Age  int
+	}
+
+	for i := 0; i < b.N; i++ {
+		var base Base
+		refer.Copy(&base, Target{Name: "dog", Age: 100})
+	}
+}
+
+func BenchmarkReferCopyMap(b *testing.B) {
+	type Base struct {
+		Name string
+		Age  int
+		Haha func() string
+	}
+
+	type Target struct {
+		Name string
+		Age  int
+	}
+
+	for i := 0; i < b.N; i++ {
+		var base Base
+		if b, err := json.Marshal(Target{Name: "dog", Age: 100}); err == nil {
+			_ = json.Unmarshal(b, &base)
+		}
 	}
 }
