@@ -5,6 +5,7 @@ import (
 )
 
 type Refer struct {
+	kind      reflect.Kind
 	Fields    map[string]reflect.Value
 	Methods   map[string]reflect.Value
 	NumField  int
@@ -59,10 +60,18 @@ func (r *Refer) Interface() interface{} {
 
 func New(target interface{}) Refer {
 	typ := reflect.TypeOf(target)
-	ins := reflect.New(typ).Elem()
+	kind := typ.Kind()
+	if kind != reflect.Struct {
+		typ = typ.Elem()
+	}
+	ins := reflect.ValueOf(target)
+	if kind != reflect.Struct {
+		ins = ins.Elem()
+	}
 	numField := ins.NumField()
 	numMethod := ins.NumMethod()
 	r := Refer{
+		kind:      kind,
 		Type:      typ,
 		Value:     ins,
 		NumField:  numField,
@@ -83,3 +92,24 @@ func New(target interface{}) Refer {
 	}
 	return r
 }
+
+// func Copy(base interface{}, target interface{}) {
+// 	t := New(target)
+// 	b := New(base)
+
+// 	if t.NumField > 0 && b.NumField > 0 {
+// 		for k, v := range t.Fields {
+// 			if _, ok := b.Fields[k]; ok {
+// 				b.Fields[k].Set(v)
+// 			}
+// 		}
+// 	}
+
+// 	if t.NumMethod > 0 && b.NumMethod > 0 {
+// 		for k, v := range t.Methods {
+// 			if _, ok := b.Methods[k]; ok {
+// 				b.Methods[k].Set(v)
+// 			}
+// 		}
+// 	}
+// }

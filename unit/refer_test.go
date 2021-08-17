@@ -59,3 +59,42 @@ func TestAllSet(t *testing.T) {
 
 	ref.Call("No_Say", "hello", 5)
 }
+
+type Base struct {
+	Name string
+	Age  int
+	Haha func() string
+}
+
+func (b Base) Say() string {
+	fmt.Println("base say", b.Name, b.Age)
+	return b.Name
+}
+
+type Target struct {
+	Name string
+	Age  int
+}
+
+func (b Target) Say() string {
+	fmt.Println("target say", b.Name, b.Age)
+	return b.Name
+}
+
+// func TestCopy(t *testing.T) {
+// 	// target := Target{Name: "dog", Age: 10}
+// 	// base := Base{}
+
+// 	target := Target{Name: "dog", Age: 10}
+// 	base := Base{}
+// 	refer.Copy(&base, target)
+// 	fmt.Println(base)
+// 	if base.Name != "dog" {
+// 		t.Error("base.Name need eq 'dog'")
+// 	}
+// 	if base.Age != 10 {
+// 		t.Error("bas.Agee need eq 10")
+// 	}
+// 	base.Say()
+// 	t.Error("aa")
+// }
